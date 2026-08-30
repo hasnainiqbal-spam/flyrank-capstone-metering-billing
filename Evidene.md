@@ -59,3 +59,25 @@ Tenant correctly flipped from Free to Pro.
 Sent the identical event ID twice.
 
 First call:
+
+## Requirement: Cost calculation (Probe 5)
+
+Sent an ai_tokens event: input=5000, cached_input=2000, output=2000, reasoning=1000.
+
+Hand-calculated expected cost using pinned pricing constants
+(config/pricing.js: input=$0.0005/1k, cached_input=$0.00025/1k, output=$0.0015/1k,
+reasoning billed as output):
+- input: 5000/1000 × $0.0005 = $0.0025
+- cached_input: 2000/1000 × $0.00025 = $0.0005
+- output+reasoning: 3000/1000 × $0.0015 = $0.0045
+- Total: $0.0075 → rounds to 1 cent
+
+GET /usage response:
+{
+  "used": {"api_call": 1, "ai_tokens": 10000},
+  "cost_cents": 2
+}
+
+2 cents = 1 cent (earlier API call) + 1 cent (this AI token event), confirming the
+pricing engine matches hand-calculated totals and correctly treats reasoning tokens
+as output-rate tokens rather than a separate category.

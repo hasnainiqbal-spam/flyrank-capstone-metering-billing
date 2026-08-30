@@ -3,6 +3,7 @@ const express = require('express');
 const generateRoute = require('./routes/generate');
 const checkoutRoute = require('./routes/checkout');
 const webhookRoute = require('./routes/webhooks');
+const usageRoute = require('./routes/usage');
 
 const app = express();
 
@@ -13,6 +14,7 @@ app.use('/', webhookRoute);
 app.use(express.json());
 app.use('/', generateRoute);
 app.use('/', checkoutRoute);
+app.use('/', usageRoute);
 
 app.get('/health', (req, res) => res.json({ status: 'ok' }));
 
