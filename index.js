@@ -1,11 +1,18 @@
 require('dotenv').config();
 const express = require('express');
 const generateRoute = require('./routes/generate');
+const checkoutRoute = require('./routes/checkout');
+const webhookRoute = require('./routes/webhooks');
 
 const app = express();
-app.use(express.json());
 
+// IMPORTANT: webhook route must come BEFORE express.json(), because it needs
+// the raw request body for Stripe signature verification.
+app.use('/', webhookRoute);
+
+app.use(express.json());
 app.use('/', generateRoute);
+app.use('/', checkoutRoute);
 
 app.get('/health', (req, res) => res.json({ status: 'ok' }));
 
