@@ -1,0 +1,35 @@
+npm install
+
+2. Copy `.env.example` to `.env` and adjust values if needed:
+
+cp .env.example .env
+
+3. Start Postgres:
+
+docker compose up -d
+
+4. Run the schema migration:
+
+docker exec -it flyrank-capstone-metering-billing-db-1 psql -U postgres -d billing -f /dev/stdin < migrations/001_init.sql
+
+   (or open a `psql` session and paste the file contents manually)
+5. Seed a test tenant:
+
+docker exec -it flyrank-capstone-metering-billing-db-1 psql -U postgres -d billing -c "INSERT INTO tenants (name, plan) VALUES ('Test Tenant', 'free');"
+
+6. Start the server:
+
+npm start
+
+7. Test the flow — see `EVIDENCE.md` for exact commands used to prove idempotency,
+   quota enforcement, Stripe sync, and cost calculation.
+
+## Limitations
+- No real Stripe account (Pakistan is unsupported by Stripe) — Checkout and events
+  are mocked as described above, but verification/dedup logic is production-real.
+- No invoicing, proration, or overage billing — explicitly out of core scope
+  per the capstone brief (Section 7).
+- Pricing constants are illustrative, not tied to any specific real provider's
+  current published rates.
+- No automated test suite (Jest/Supertest were installed but manual curl/script-based
+  testing was used instead, documented in EVIDENCE.md).
