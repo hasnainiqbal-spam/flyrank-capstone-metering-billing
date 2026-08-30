@@ -34,3 +34,28 @@ Body: {"error":"Quota exceeded: 0/100000 ai_tokens used this month"}
 Rule implemented: Free-plan tenants at/over quota get 402 (Payment Required — must
 upgrade). Paid-plan tenants at/over quota would get 429 (Too Many Requests — retry
 later), per services/quota.js.
+
+## Requirement: Stripe integration (Probes 3 & 4)
+
+**Note:** Stripe does not support account creation from Pakistan (confirmed via
+FlyRank community: "you can continue with this capstone using the SDK with
+mocked/test fixtures"). All signature verification and deduplication logic below
+is real and uses Stripe's actual SDK; only the event source (a live Stripe account)
+is mocked/generated locally via `stripe.webhooks.generateTestHeaderString()`.
+
+### Probe 3 — Checkout → webhook → plan upgrade
+Sent a signed `checkout.session.completed` event via `test-webhook.js`.
+
+Response: Status 200, `{"received":true}`
+
+Verified in DB:
+| id | plan | stripe_customer_id | stripe_subscription_id | subscription_status |
+|---|---|---|---|---|
+| 29db8fb6... | pro | cus_mock_abc123 | sub_mock_xyz789 | active |
+
+Tenant correctly flipped from Free to Pro.
+
+### Probe 4a — Duplicate event replay
+Sent the identical event ID twice.
+
+First call:
